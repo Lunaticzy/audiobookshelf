@@ -280,9 +280,11 @@ export default {
       this.playerHandler.playPause()
     },
     jumpForward() {
+      this._manualSeekTime = Date.now()
       this.playerHandler.jumpForward()
     },
     jumpBackward() {
+      this._manualSeekTime = Date.now()
       this.playerHandler.jumpBackward()
     },
     setVolume(volume) {
@@ -293,6 +295,7 @@ export default {
       this.playerHandler.setPlaybackRate(playbackRate)
     },
     seek(time) {
+      this._manualSeekTime = Date.now()
       this.playerHandler.seek(time)
     },
     playbackTimeUpdate(time) {
@@ -567,6 +570,9 @@ export default {
       const doSkipOutro = skipSettings.skipOutro && skipSettings.outroDuration > 0
       if (!doSkipIntro && !doSkipOutro) return
       if (!this.isPlaying || !this.chapters.length) return
+
+      // 用户手动seek后2秒内不触发跳过
+      if (this._manualSeekTime && Date.now() - this._manualSeekTime < 2000) return
 
       // 防重入：正在跳过时等待到达目标位置后再解除
       if (this._isSkipping) {
